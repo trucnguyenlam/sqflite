@@ -1,7 +1,7 @@
 package com.tekartik.sqflite;
 
-import android.database.DatabaseErrorHandler;
-import android.database.sqlite.SQLiteDatabase;
+import io.requery.android.database.DatabaseErrorHandler;
+import io.requery.android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.io.File;

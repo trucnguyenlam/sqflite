@@ -42,5 +42,10 @@ android {
 }
 
 dependencies {
+//    for requery sqlite, this version is the available on in cache, don't change
+    implementation 'io.requery:sqlite-android:3.34.1'
+    implementation 'androidx.sqlite:sqlite:2.1.0'
+    implementation 'androidx.core:core:1.3.2'
+//    test dependencies
     testImplementation 'junit:junit:4.13.1'
 }
