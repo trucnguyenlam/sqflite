@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
-
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/database_mixin.dart' // ignore: implementation_imports
     show
@@ -17,7 +16,6 @@ import 'package:sqflite_example/src/dev_utils.dart';
 import 'package:synchronized/synchronized.dart';
 
 import 'test_page.dart';
-
 // ignore_for_file: avoid_slow_async_io
 // ignore_for_file: avoid_print
 
@@ -143,7 +141,7 @@ class OpenTestPage extends TestPage {
       // await Sqflite.devSetDebugModeOn(false);
       final databasesPath = await factory.getDatabasesPath();
       // On Android we know it is current a 'databases' folder in the package folder
-      print('databasesPath: ' + databasesPath);
+      print('databasesPath: $databasesPath');
       if (Platform.isAndroid) {
         expect(basename(databasesPath), 'databases');
       } else if (Platform.isIOS) {
@@ -703,9 +701,9 @@ class OpenTestPage extends TestPage {
     });
 
     test('In memory database', () async {
-      final inMemoryPath =
+      const inMemoryPath =
           inMemoryDatabasePath; // tried null without success, as it crashes on Android
-      final path = inMemoryPath;
+      const path = inMemoryPath;
 
       var db = await openDatabase(path);
       await db

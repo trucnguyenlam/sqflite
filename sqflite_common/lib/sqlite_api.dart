@@ -11,6 +11,8 @@ export 'package:sqflite_common/src/constant.dart'
         sqfliteLogLevelSql,
         sqfliteLogLevelVerbose;
 export 'package:sqflite_common/src/exception.dart' show DatabaseException;
+export 'package:sqflite_common/src/sqflite_debug.dart'
+    show SqfliteDatabaseFactoryDebug;
 
 /// Basic databases operations
 abstract class DatabaseFactory {
@@ -322,7 +324,8 @@ abstract class OpenDatabaseOptions {
   ///
   /// [version] (optional) specifies the schema version of the database being
   /// opened. This is used to decide whether to call [onCreate], [onUpgrade],
-  /// and [onDowngrade]
+  /// and [onDowngrade]. If specified, it must be a 32-bits integer greater than
+  /// 0.
   ///
   /// The optional callbacks are called in the following order:
   ///

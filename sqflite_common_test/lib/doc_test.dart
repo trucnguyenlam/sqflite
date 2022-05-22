@@ -1,14 +1,40 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
+import 'package:sqflite_common/sqflite_dev.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart';
+import 'package:sqflite_common/utils/utils.dart' as utils;
 import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:test/test.dart';
 
 /// Documentation test.
 void run(SqfliteTestContext context) {
   var factory = context.databaseFactory;
+  var databaseFactory = factory;
+
+  /// Copy shortcut implementation
+  Future<Database> openDatabase(String path,
+      {int? version,
+      OnDatabaseConfigureFn? onConfigure,
+      OnDatabaseCreateFn? onCreate,
+      OnDatabaseVersionChangeFn? onUpgrade,
+      OnDatabaseVersionChangeFn? onDowngrade,
+      OnDatabaseOpenFn? onOpen,
+      bool readOnly = false,
+      bool singleInstance = true}) {
+    final options = OpenDatabaseOptions(
+        version: version,
+        onConfigure: onConfigure,
+        onCreate: onCreate,
+        onUpgrade: onUpgrade,
+        onDowngrade: onDowngrade,
+        onOpen: onOpen,
+        readOnly: readOnly,
+        singleInstance: singleInstance);
+    return databaseFactory.openDatabase(path, options: options);
+  }
 
   group('doc', () {
     test('upgrade_add_table', () async {
@@ -378,6 +404,42 @@ CREATE TABLE Product (
         expect(result.length, 1, reason: 'list $result');
         await db.close();
       }
+    });
+
+    test('Logging', () async {
+      try {
+        // ignore: deprecated_member_use
+        await databaseFactory.setLogLevel(sqfliteLogLevelVerbose);
+        var db = await databaseFactory.openDatabase(inMemoryDatabasePath);
+        await db.getVersion();
+        await db.close();
+      } finally {
+        // ignore: deprecated_member_use
+        await databaseFactory.setLogLevel(sqfliteLogLevelNone);
+      }
+    });
+
+    test('BLOB lookup', () async {
+      final db = await openDatabase(
+        inMemoryDatabasePath,
+        version: 1,
+        onCreate: (db, version) async {
+          await db.execute(
+            'CREATE TABLE test (id BLOB, value INTEGER)',
+          );
+        },
+      );
+      final id = Uint8List.fromList([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      await db.insert('test', {'id': id, 'value': 1});
+      var result = await db.query('test', where: 'id = ?', whereArgs: [id]);
+      print('regular blob lookup (failing on Android)): $result');
+
+      // The compatible way to lookup for BLOBs (even work on Android) using the hex function
+      result = await db
+          .query('test', where: 'hex(id) = ?', whereArgs: [utils.hex(id)]);
+      print('correct blob lookup: $result');
+
+      expect(result.first['value'], 1);
     });
   });
 }
