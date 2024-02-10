@@ -3,12 +3,12 @@
 If you ran into build/runtime issues, please try the following:
 
 * Update flutter to the latest version (`flutter upgrade`)
-* Update sqflite dependencies to the latest version in your `pubspec.yaml` 
-(`sqflite >= X.Y.Z`)
+* Update sqflite dependencies to the latest version in your `pubspec.yaml`
+  (`sqflite >= X.Y.Z`)
 * Update dependencies (`flutter packages upgrade`)
 * try `flutter clean`
-* Try deleting the flutter cache folder (which will 
-downloaded again automatically) from your flutter installation folder `$FLUTTER_TOP/bin/cache`
+* Try deleting the flutter cache folder (which will
+  downloaded again automatically) from your flutter installation folder `$FLUTTER_TOP/bin/cache`
 
 # Recommendations
 
@@ -19,8 +19,9 @@ Sample `analysis_options.yaml` file:
 
 ```
 analyzer:
-  strong-mode:
-    implicit-casts: false
+    language:
+    strict-casts: true
+    strict-inference: true
 ```
 
 # Common issues
@@ -36,7 +37,7 @@ Unhandled exception: type '_InternalLinkedHashMap' is not a subtype of type 'Map
 ```
 
 Make sure you create object of type `Map<String, Object?>` and not simply `Map` for records you
-insert and update. The option `implicit-casts: false` explained above helps to find such issues
+insert and update. The option `language: strict-casts: false` explained above helps to find such issues
 
 ## MissingPluginException
 
@@ -48,15 +49,18 @@ This error is typically a build/setup error after adding the dependency.
 - Try to clean your build folder `flutter clean`
 - On iOS, you can try to force a `pod install` / `pod update`
 - Follow the [using package flutter guide](https://flutter.dev/docs/development/packages-and-plugins/using-packages)
-- Search for [other bugs in flutter](https://github.com/flutter/flutter/search?q=MissingPluginException&type=Issues) 
-  like this, other people face the same issue with other plugins so it is likely not sqflite related 
+- Search for [other bugs in flutter](https://github.com/flutter/flutter/search?q=MissingPluginException&type=Issues)
+  like this, other people face the same issue with other plugins so it is likely not sqflite related
 
 Advanced checks:
-- If you are using sqflite in a FCM Messaging context, you might need to [register the plugin earlier](https://github.com/tekartik/sqflite/issues/446).
-- if the project was generated a long time ago (2019), you might have to follow the [plugin migration guide](https://flutter.dev/docs/development/packages-and-plugins/plugin-api-migration)
+
+- If you are using sqflite in a FCM Messaging context, you might need
+  to [register the plugin earlier](https://github.com/tekartik/sqflite/issues/446).
+- if the project was generated a long time ago (2019), you might have to follow
+  the [plugin migration guide](https://flutter.dev/docs/development/packages-and-plugins/plugin-api-migration)
 - Check the GeneratedPluginRegistrant file that flutter run should have generated in your project contains
   a line registering the plugin.
-  
+
   Android:
   ```java
   SqflitePlugin.registerWith(registry.registrarFor("com.tekartik.sqflite.SqflitePlugin"));
@@ -65,7 +69,7 @@ Advanced checks:
   ```objective-c
   [SqflitePlugin registerWithRegistrar:[registry registrarForPlugin:@"SqflitePlugin"]];
   ```
-- Check MainActivity.java (Android) contains a call to 
+- Check MainActivity.java (Android) contains a call to
   GeneratedPluginRegistrant asking it to register itself. This call should be made from the app
   launch method (onCreate).
   ```java
@@ -77,7 +81,7 @@ Advanced checks:
       }
   }
   ```
-- Check AppDelegate.m (iOS) contains a call to 
+- Check AppDelegate.m (iOS) contains a call to
   GeneratedPluginRegistrant asking it to register itself. This call should be made from the app
   launch method (application:didFinishLaunchingWithOptions:).
   ```objective-c
@@ -86,31 +90,41 @@ Advanced checks:
     return [super application:application didFinishLaunchingWithOptions:launchOptions];
   }
   ```
-- If it happens to Android release mode, make sure to [remove shrinkResources 
-  true and minifyEnabled true lines in build.gradle](https://github.com/tekartik/sqflite/issues/452#issuecomment-655602329) to solve the problem.
+- If it happens to Android release mode, make sure to [remove shrinkResources
+  true and minifyEnabled true lines in build.gradle](https://github.com/tekartik/sqflite/issues/452#issuecomment-655602329)
+  to solve the problem.
 
-Before raising this issue, try adding another well established plugin (the simplest being 
+Before raising this issue, try adding another well established plugin (the simplest being
 `path_provider` or `shared_preferences`) to see if you get the error here as well.
 
-## Warning database has been locked for... 
+## Warning database has been locked for...
 
-I you get this output in debug mode:
-> Warning database has been locked for 0:00:10.000000. Make sure you always use the transaction object for database operations during a transaction
+If you get this output in debug mode:
+
+> Warning database has been locked for 0:00:10.000000. Make sure you always use the transaction object for database
+> operations during a transaction
 
 One common mistake is to use the db object in a transaction:
 
 ```dart
-await db.transaction((txn) async {
-  // DEADLOCK HERE
-  await db.insert('my_table', {'name': 'my_name'});
+await
+db.transaction
+(
+(txn) async {
+// DEADLOCK HERE
+await db.insert('my_table', {'name': 'my_name'});
 });
 ```
+
 ...instead of using the correct transaction object (below named `txn`):
 
 ```dart
-await db.transaction((txn) async {
-  // Ok!
-  await txn.insert('my_table', {'name': 'my_name'});
+await
+db.transaction
+(
+(txn) async {
+// Ok!
+await txn.insert('my_table', {'name': 'my_name'});
 });
 ```
 
@@ -119,7 +133,9 @@ await db.transaction((txn) async {
 A quick way to view SQL commands printed out is to call before opening any database
 
 ```dart
-await Sqflite.devSetDebugModeOn(true);
+await
+Sqflite.devSetDebugModeOn
+(true);
 ```
 
 This call is on purpose deprecated to force removing it once the SQL issues has been resolved.
@@ -202,12 +218,106 @@ end
 Since Flutter templates change over time for new sdk, you might sometimes try to delete the ios folder and re-create
 your project.
 
+### XCode 14 support
+
+You might likely get the following error:
+
+```
+Error (Xcode): File not found: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/arc/libarclite_iphonesimulator.a
+```
+
+See: https://developer.apple.com/forums/thread/728021
+
+Xcode 14 only supports building for a deployment target of iOS 11.
+
+Here as well you need to enforce the deployment target until I find a better way
+as the FMDB dependency is no longer actively maintained.
+
+In your application Podfile inside the post_install section where you have this in the
+app template:
+
+```
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+  end
+end
+```
+
+you need to have
+(11 is used here, but you might want to specify a higher platform):
+
+```
+post_install do |installer|
+
+  installer.generated_projects.each do |project|
+    project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '11.0'
+      end
+    end
+  end
+
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+  end
+end
+```
+
+### Module 'FMDB' not found
+
+Since v2.2.1-1, you might encounter `Module 'FMDB' not found` on old projects.
+
+You need to add `use_frameworks!` in your Podfile:
+
+```
+target 'Runner' do
+  # Needed since v2.2.1-1
+  # In newly create project, this is set but it is not
+  # always the case on older projects
+  use_frameworks!
+  ...
+end
+```
+
+## Runtime exception
+
+### Json1 extension
+
+```
+DatabaseException: DatabaseException(no such function: JSON_OBJECT)
+```
+
+I could not find the details of what each built-in version includes (for
+example the version os SQLite for each Android OS version
+here https://developer.android.com/reference/android/database/sqlite/package-summary)
+but I doubt any of them include the json1 extension.
+
+json1 extension requires at least of SQLite 3.38.0 (2021-02-09) (https://www.sqlite.org/json1.html)
+
+`sqflite` uses the SQLite available on the platform. It does not ship/bundle any additional SQLite library. You can get the
+version using `SELECT sqlite_version()`:
+
+```dart
+print((await db.rawQuery('SELECT sqlite_version()')).first.values.first);
+```
+
+which should give a version formatted like this:
+
+```
+3.22.0
+```
+
+Unfortunately the version of SQLite depends on the OS version.
+
+You could get a more recent version using [`sqflite_common_ffi`](https://pub.dev/packages/sqflite_common_ffi).
+
+You could then add [`sqlite3_flutter_libs`](https://pub.dev/packages/sqlite3_flutter_libs) for ios/android or include your own
+sqlite shared library for desktop or mobile (one for each platform).
+
 ## Error in Flutter web
 
-As far as i know, the web does not support sqlite in any acceptable ways (yes there are in memory solution but no 
-persistency, see https://github.com/tekartik/sqflite/issues/212).
-
-Since there is no decent solution on the web, as of today, support is not planned.
+Look at package [sqflite_common_ffi_web](https://pub.dev/packages/sqflite_common_ffi_web) for experimental Web support.
 
 IndexedDB or any solution on top of it should be considered for storage on the Web.
 

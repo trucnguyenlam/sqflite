@@ -1,14 +1,14 @@
 package com.tekartik.sqflite;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 /**
  * Constants between dart & Java world
@@ -41,11 +41,6 @@ public class SqlCommandTest {
                 1.234f,
                 4.5678, // double
                 new byte[]{1, 2, 3}}, command.getSqlArguments());
-        assertArrayEquals(new String[]{"1", "2", "text",
-                "1.234",
-                "4.5678", // double
-                "[1, 2, 3]"}, command.getQuerySqlArguments());
-
     }
 
     @Test
@@ -70,32 +65,5 @@ public class SqlCommandTest {
         command1 = new SqlCommand(null, Arrays.asList((Object) new byte[]{1, 2}));
         assertNotEquals(command1, command2);
         assertNotEquals(command2, command1);
-    }
-
-    @Test
-    public void sanitizeQuery() {
-        SqlCommand command = new SqlCommand("?", Arrays.asList((Object) 1));
-        assertEquals(new SqlCommand("1", null), command.sanitizeForQuery());
-        command = new SqlCommand("?", Arrays.asList((Object) 1, 2));
-        assertEquals(command, command.sanitizeForQuery());
-        command = new SqlCommand("?", null);
-        assertEquals(command, command.sanitizeForQuery());
-        command = new SqlCommand(null, null);
-        assertEquals(command, command.sanitizeForQuery());
-        command = new SqlCommand("?,?,?,?,?,?", Arrays.asList((Object) 1L, 2, "text",
-                1.234f,
-                4.5678, // double
-                new byte[]{1, 2, 3}));
-        assertEquals(new SqlCommand("1,2,?,?,?,?", Arrays.asList((Object) "text",
-                1.234f,
-                4.5678, // double
-                new byte[]{1, 2, 3})), command.sanitizeForQuery());
-
-    }
-
-    @Test
-    public void indexedParam() {
-        SqlCommand command = new SqlCommand("?1", Arrays.asList((Object) 1));
-        assertEquals(new SqlCommand("?1", Arrays.asList((Object) 1)), command.sanitizeForQuery());
     }
 }

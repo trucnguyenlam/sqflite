@@ -30,10 +30,10 @@ For better performance you should copy the asset only once (the first time) then
 always try to open the copy
 
 ```dart
-
-import 'package:path/path.dart';
 import 'dart:typed_data';
+import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:path/path.dart';
 
 var databasesPath = await getDatabasesPath();
 var path = join(databasesPath, "demo_asset_example.db");
@@ -51,7 +51,7 @@ if (!exists) {
   } catch (_) {}
     
   // Copy from asset
-  ByteData data = await rootBundle.load(join("assets", "example.db"));
+  ByteData data = await rootBundle.load(url.join("assets", "example.db"));
   List<int> bytes =
   data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
   
@@ -61,8 +61,9 @@ if (!exists) {
 } else {
   print("Opening existing database");
 }
+
 // open the database
-db = await openDatabase(path, readOnly: true);
+var db = await openDatabase(path, readOnly: true);
 
 ```
 
@@ -86,7 +87,7 @@ try {
 } catch (_) {}
 
 // Copy from asset
-ByteData data = await rootBundle.load(join("assets", "example.db"));
+ByteData data = await rootBundle.load(url.join("assets", "example.db"));
 List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 await new File(path).writeAsBytes(bytes, flush: true);
 
@@ -99,6 +100,10 @@ var db = await openDatabase(path, readOnly: true);
 You might want to have a versioning strategy (not yet part of this project) to only copy the asset db when
 it changes in the build system or might also allow the user to modify the database (in this case you must copy it
 first).
+
+### Web support
+
+Check [opening_asset_db_web.md](../../packages_web/sqflite_common_ffi_web/doc/opening_asset_db_web.md) for web support.
 
 ## Open it!
 ````

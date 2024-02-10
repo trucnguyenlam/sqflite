@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:test/test.dart';
 
@@ -5,12 +7,30 @@ import 'test_scenario.dart';
 
 void main() {
   group('sqflite', () {
-    test('open', () async {
+    test('open id result compat', () async {
       final scenario = startScenario([
         [
           'openDatabase',
-          {'path': ':memory:', 'singleInstance': true},
+          {'path': ':memory:', 'singleInstance': false},
           1
+        ],
+        [
+          'closeDatabase',
+          {'id': 1},
+          null
+        ],
+      ]);
+      final factory = scenario.factory;
+      final db = await factory.openDatabase(inMemoryDatabasePath);
+      await db.close();
+      scenario.end();
+    });
+    test('open map result', () async {
+      final scenario = startScenario([
+        [
+          'openDatabase',
+          {'path': ':memory:', 'singleInstance': false},
+          {'id': 1},
         ],
         [
           'closeDatabase',
@@ -25,50 +45,69 @@ void main() {
     });
     test('open with version', () async {
       final scenario = startScenario([
-        [
-          'openDatabase',
-          {'path': ':memory:', 'singleInstance': true},
-          1
-        ],
+        protocolOpenStep,
         [
           'query',
-          {'sql': 'PRAGMA user_version', 'arguments': null, 'id': 1},
+          {'sql': 'PRAGMA user_version', 'id': 1},
+          // ignore: inference_failure_on_collection_literal
           {}
         ],
         [
           'execute',
           {
             'sql': 'BEGIN EXCLUSIVE',
-            'arguments': null,
             'id': 1,
-            'inTransaction': true
+            'inTransaction': true,
+            'transactionId': null
           },
           null
         ],
         [
           'query',
-          {'sql': 'PRAGMA user_version', 'arguments': null, 'id': 1},
+          {'sql': 'PRAGMA user_version', 'id': 1},
+          // ignore: inference_failure_on_collection_literal
           {}
         ],
         [
           'execute',
-          {'sql': 'PRAGMA user_version = 1', 'arguments': null, 'id': 1},
+          {'sql': 'PRAGMA user_version = 1', 'id': 1},
           null
         ],
         [
           'execute',
-          {'sql': 'COMMIT', 'arguments': null, 'id': 1, 'inTransaction': false},
+          {'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
           null
         ],
-        [
-          'closeDatabase',
-          {'id': 1},
-          null
-        ],
+        protocolCloseStep,
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath,
           options: OpenDatabaseOptions(version: 1, onCreate: (db, version) {}));
       await db.close();
+      scenario.end();
+    });
+    test('read/write', () async {
+      final scenario = startScenario([
+        [
+          'writeDatabaseBytes',
+          {
+            'path': ':memory:',
+            'bytes': [1, 2, 3],
+          },
+          null,
+        ],
+        [
+          'readDatabaseBytes',
+          {'path': ':memory:'},
+          {
+            'bytes': Uint8List.fromList([1, 2, 3])
+          }
+        ],
+      ]);
+      final factory = scenario.factory;
+      await factory.writeDatabaseBytes(
+          inMemoryDatabasePath, Uint8List.fromList([1, 2, 3]));
+      expect(await factory.readDatabaseBytes(inMemoryDatabasePath), [1, 2, 3]);
+
       scenario.end();
     });
   });

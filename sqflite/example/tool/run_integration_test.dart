@@ -1,27 +1,22 @@
-//
-// @dart = 2.9
-//
-// This is to allow running this file without null experiment
-// In the future, remove this 2.9 command and run using: dart --enable-experiment=non-nullable --no-sound-null-safety run tool/travis.dart
-import 'package:process_run/shell.dart';
-import 'package:pub_semver/pub_semver.dart';
+import 'dart:io';
 
-Future<void> main() async {
-  await runIntegrationTest();
+import 'package:process_run/shell.dart';
+
+Future<void> main(List<String> arguments) async {
+  var deviceId = ShellEnvironment().vars['SQFLITE_TEST_DEVICE_ID'];
+  if (deviceId == null) {
+    // ignore: avoid_print
+    stdout.writeln(
+        'To run on a specific device set SQFLITE_TEST_DEVICE_ID=<deviceId>,'
+        ' for example \'emulator-5554\' typically for android emulator');
+  }
+  await runIntegrationTest(deviceId: deviceId);
 }
 
-Future<void> runIntegrationTest({String deviceId}) async {
+Future<void> runIntegrationTest({String? deviceId}) async {
   final shell = Shell();
 
-  final nnbdEnabled = dartVersion > Version(2, 11, 0, pre: '0');
-  if (nnbdEnabled) {
-    // Temp dart extra option. To remove once nnbd supported on stable without flags
-    const dartExtraOptions = '--enable-experiment=non-nullable';
-    // Needed for run and test
-    const dartRunExtraOptions = '$dartExtraOptions --no-sound-null-safety';
-    await shell.pushd('android').run(
-        'flutter drive ${deviceId != null ? '-d $deviceId ' : ''}$dartRunExtraOptions'
-        ' --driver=test_driver/integration_test.dart'
-        ' --target=integration_test/sqflite_test.dart');
-  }
+  await shell.run('flutter drive${deviceId != null ? ' -d $deviceId ' : ''}'
+      ' --driver=test_driver/integration_test.dart'
+      ' --target=integration_test/sqflite_test.dart');
 }

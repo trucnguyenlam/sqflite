@@ -33,13 +33,12 @@ String _toFilePath(String parent, String path, {bool? windows}) {
 String? pathPackageConfigMapGetPackagePath(
     String path, Map packageConfigMap, String package,
     {bool? windows}) {
-  var packagesList = packageConfigMap['packages'];
+  var packagesList = packageConfigMap['packages'] as Iterable;
   for (var packageMap in packagesList) {
     if (packageMap is Map) {
       var name = packageMap['name'];
 
       if (name is String && name == package) {
-        print(name);
         var rootUri = packageMap['rootUri'];
         if (rootUri is String) {
           // rootUri if relative is relative to .dart_tool

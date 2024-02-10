@@ -1,3 +1,81 @@
+## 2.3.2
+
+* Shared iOS/MacOS darwin implementation
+* Remove FMDB podspec dependency
+
+## 2.3.1
+
+* Add iOS/MacOS privacy manifest
+
+## 2.3.0
+
+* Dart 3 only
+
+## 2.2.8+4
+
+* Android: Adds a namespace for compatibility with AGP 8.0.
+* Android: Use compile SDK 33
+* Export global sqflite API
+* iOS set minimum deployment target to 11.0
+
+## 2.2.7
+
+* Dart 3 support
+
+## 2.2.6
+
+* uri support for supported implementations.
+
+## 2.2.5
+
+* Fix concurrency issue in database worker pool (chriscui@google.com)
+* add android `setLocale` API call support.
+
+## 2.2.4+1
+
+* Experimental logger support.
+
+## 2.2.3-1
+
+* strict-casts and sdk 2.18 support
+ 
+## 2.2.2
+
+* Fix iOS/MacOS FMDB include for non-swift project
+
+## 2.2.1
+
+* Allow multiple threads on Android, thanks to zhenpingcui
+
+## 2.2.1-1
+
+* Fix iOS/MacOS FMDB include
+
+## 2.2.0+3
+
+* Implements `Database.queryCursor()` and `Database.rawQueryCursor()`
+* Dependency update
+* Initial support of cross isolate safe
+* Transaction v2 update
+
+## 2.1.0+1
+
+* Android: fix parameter binding for non string parameters
+* Android: fix unit test
+
+## 2.0.4-dev.1
+
+* Android: Allow turning on WAL in the manifest.
+
+## 2.0.3+1
+
+* MacOS: Fix crash when an invalid number of parameters is specified in the query
+
+## 2.0.3
+
+* iOS/Android: Flutter 3.0 support, makes all the channel calls happen on thread pool instead of the UI thread
+* iOS/MacOS: make close happen in a background thread
+
 ## 2.0.2+1
 
 * Android build: remove jcenter, compile sdk set to 31
@@ -117,7 +195,7 @@ native world and executing `ROLLBACK` to prevent `SQLITE_BUSY` error
 
 ## 0.11.1
 
-* add `Sqlflite.hex` to allow querying on blob fields
+* add `Sqflite.hex` to allow querying on blob fields
 
 ## 0.11.0
 

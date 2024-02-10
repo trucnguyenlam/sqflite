@@ -331,52 +331,6 @@ void run(SqfliteTestContext context) {
     await db.close();
   });
 
-  /*
-    no bundle support
-
-    test('Issue#64', () async {
-      // await Sqflite.devSetDebugModeOn(true);
-      var path =await context.initDeleteDb('issue_64.db');
-
-      // delete existing if any
-      await deleteDatabase(path);
-
-      // Copy from asset
-      var data = await rootBundle.load(join('assets', 'issue_64.db'));
-      var bytes =
-          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-      await new File(path).writeAsBytes(bytes);
-
-      // open the database
-      var db =await factory.openDatabase(path);
-
-      var result = await db.query('recordings',
-          columns: ['id', 'content', 'file', 'speaker', 'reference']);
-      print('result1: $result');
-      expect(result.length, 2);
-
-      // This one does not work
-      // to investigate
-      result = await db.query('recordings',
-          columns: ['id', 'content', 'file', 'speaker', 'reference'],
-          where: 'speaker = ?',
-          whereArgs: [1]);
-
-      print('result2: $result');
-      expect(result.length, 2);
-
-      result = await db.query(
-        'recordings',
-        columns: ['id', 'content', 'file', 'speaker', 'reference'],
-        where: 'speaker = 1',
-      );
-      print('result3: $result');
-      expect(result.length, 2);
-
-      await db.close();
-    });
-    */
-
   test('sql dump file', () async {
     // await Sqflite.devSetDebugModeOn(true);
 
@@ -419,7 +373,6 @@ INSERT INTO test (value) VALUES (10);
       await db.execute(
         'CREATE TABLE `groups` (`id`	INTEGER NOT NULL UNIQUE, `service_id`	INTEGER, `official`	BOOLEAN, `type`	TEXT, `access`	TEXT, `ads`	BOOLEAN, `mute`	BOOLEAN, `read`	INTEGER, `background`	TEXT, `last_message_time`	INTEGER, `last_message_id`	INTEGER, `deleted_to`	INTEGER, `is_admin`	BOOLEAN, `is_owner`	BOOLEAN, `description`	TEXT, `pin`	BOOLEAN, `name`	TEXT, `opposite_id`	INTEGER, `badge`	INTEGER, `member_count`	INTEGER, `identifier`	TEXT, `join_link`	TEXT, `hash`	TEXT, `service_info`	TEXT, `seen`	INTEGER, `pinned_message`	INTEGER, `delivery`	INTEGER, PRIMARY KEY(`id`) ) WITHOUT ROWID;',
       );
-      print('1');
       await db.execute(
         'CREATE INDEX groups_id ON groups ( service_id )',
       );
@@ -565,5 +518,27 @@ INSERT INTO test (value) VALUES (10);
       // print(resourceId);
     }
     await db.close();
+  });
+  test('wal', () async {
+    var path = await context.initDeleteDb('exp_wal.db');
+    var db = await factory.openDatabase(path,
+        options: OpenDatabaseOptions(
+            version: 1,
+            onConfigure: (Database db) async {
+              await db.execute('PRAGMA journal_mode=WAL');
+              await db.rawQuery('PRAGMA journal_mode=WAL');
+            },
+            onCreate: (Database db, int version) async {
+              await db.execute('CREATE TABLE test (id INTEGER)');
+              await db.insert('test', <String, Object?>{'id': 1});
+            }));
+    try {
+      var resultSet = await db.rawQuery('SELECT id FROM test');
+      expect(resultSet, [
+        {'id': 1},
+      ]);
+    } finally {
+      await db.close();
+    }
   });
 }

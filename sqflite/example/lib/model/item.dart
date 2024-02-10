@@ -30,7 +30,7 @@ class Item {
 /// Menu item implementation.
 class SqfMenuItem extends Item {
   /// Menu item implementation.
-  SqfMenuItem(String name, this.body, {this.summary}) : super(name) {
+  SqfMenuItem(super.name, this.body, {this.summary}) {
     state = ItemState.none;
   }
 
@@ -40,7 +40,7 @@ class SqfMenuItem extends Item {
   /// Run the item.
   Future run() {
     state = ItemState.running;
-    return Future.delayed(const Duration()).then((_) async {
+    return Future<void>.delayed(const Duration()).then((_) async {
       try {
         await body();
         state = ItemState.success;
