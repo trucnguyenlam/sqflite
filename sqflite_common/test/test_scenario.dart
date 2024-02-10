@@ -2,6 +2,20 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/mixin/import_mixin.dart';
 import 'package:test/test.dart';
 
+/// Common open step
+var protocolOpenStep = [
+  'openDatabase',
+  {'path': ':memory:', 'singleInstance': false},
+  {'id': 1}
+];
+
+/// Common close step
+var protocolCloseStep = [
+  'closeDatabase',
+  {'id': 1},
+  null
+];
+
 class MockMethodCall {
   String? expectedMethod;
   dynamic expectedArguments;
@@ -38,7 +52,7 @@ MockScenario startScenario(List<List> data) {
   late MockScenario scenario;
   final databaseFactoryMock = buildDatabaseFactory(
       tag: 'mock',
-      invokeMethod: (String method, [dynamic arguments]) async {
+      invokeMethod: (String method, [Object? arguments]) async {
         final index = scenario.index++;
         // devPrint('$index ${scenario.methodsCalls[index]}');
         final item = scenario.methodsCalls[index];

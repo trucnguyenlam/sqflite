@@ -4,13 +4,13 @@ import 'package:sqflite_example/model/main_item.dart';
 /// Main item widget.
 class MainItemWidget extends StatefulWidget {
   /// Main item widget.
-  const MainItemWidget(this.item, this.onTap, {Key? key}) : super(key: key);
+  const MainItemWidget(this.item, this.onTap, {super.key});
 
   /// item data.
   final MainItem item;
 
   /// onTap action (typically run or open).
-  final Function(MainItem item) onTap; // = Function(MainItem item);
+  final void Function(MainItem item) onTap; // = Function(MainItem item);
 
   @override
   // ignore: library_private_types_in_public_api

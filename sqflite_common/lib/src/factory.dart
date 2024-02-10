@@ -10,7 +10,7 @@ abstract class SqfliteDatabaseFactory
 
   // To override
   // This also should wrap exception
-  //Future<T> safeInvokeMethod<T>(String method, [dynamic arguments]);
+  //Future<T> safeInvokeMethod<T>(String method, [Object? arguments]);
 
   /// Create a new database object.
   SqfliteDatabase newDatabase(
@@ -27,9 +27,11 @@ abstract class SqfliteDatabaseFactory
   /// db.close() calls this right await.
   Future<void> closeDatabase(SqfliteDatabase database);
 
+  /// Delete the database file.
   @override
   Future<void> deleteDatabase(String path);
 
+  /// Check if a database exists.
   @override
   Future<bool> databaseExists(String path);
 }

@@ -29,9 +29,9 @@
 .pub-cache/
 .pub/
 /build/
+.metadata
 
 # Web related
-lib/generated_plugin_registrant.dart
 
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
@@ -44,5 +44,7 @@ lib/generated_plugin_registrant.dart
 /windows/
 /ios/
 
+# flutter
+.metadata
 # Coverage
 /coverage

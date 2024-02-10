@@ -20,10 +20,14 @@ void main() {
         onDatabaseDowngradeDelete,
         sqfliteLogLevelNone,
         sqfliteLogLevelSql,
-        sqfliteLogLevelVerbose
+        sqfliteLogLevelVerbose,
       ]) {
         expect(value, isNotNull);
       }
+      try {
+        // ignore: unnecessary_cast
+        SqfliteDatabaseExecutorExt((null as Database?)!).getVersion();
+      } catch (_) {}
     });
   });
 }

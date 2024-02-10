@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_example/utils.dart';
 
 import 'test_page.dart';
 
@@ -38,20 +37,32 @@ class TypeTestPage extends TestPage {
       //devPrint('2^33: ${await getValue(id)}');
       expect(await getValue(id), pow(2, 33));
 
-      id = await insertValue(pow(2, 62));
-      //devPrint('2^62: ${pow(2, 62)} ${await getValue(id)}');
-      expect(await getValue(id), pow(2, 62),
-          reason: '2^62: ${pow(2, 62)} ${await getValue(id)}');
+      // about web limits
+      id = await insertValue(pow(2, 53));
+      expect(await getValue(id), pow(2, 53));
 
-      var value = pow(2, 63).round() - 1;
-      id = await insertValue(value);
-      //devPrint('${value} ${await getValue(id)}');
-      expect(await getValue(id), value, reason: '$value ${await getValue(id)}');
+      if (!kIsWeb) {
+        // Not for web
+        id = await insertValue(pow(2, 62));
+        //devPrint('2^62: ${pow(2, 62)} ${await getValue(id)}');
+        expect(await getValue(id), pow(2, 62),
+            reason: '2^62: ${pow(2, 62)} ${await getValue(id)}');
 
-      value = -(pow(2, 63)).round();
-      id = await insertValue(value);
-      //devPrint('${value} ${await getValue(id)}');
-      expect(await getValue(id), value, reason: '$value ${await getValue(id)}');
+        var value = pow(2, 63).round() - 1;
+        id = await insertValue(value);
+        //devPrint('${value} ${await getValue(id)}');
+        expect(await getValue(id), value,
+            reason: '$value ${await getValue(id)}');
+
+        value = -(pow(2, 63)).round();
+        id = await insertValue(value);
+        //devPrint('${value} ${await getValue(id)}');
+        expect(await getValue(id), value,
+            reason: '$value ${await getValue(id)}');
+      }
+      var bigValue = 1234567890123456;
+      id = await insertValue(bigValue);
+      expect(await getValue(id), bigValue);
       /*
       id = await insertValue(pow(2, 63));
       devPrint('2^63: ${pow(2, 63)} ${await getValue(id)}');
@@ -81,12 +92,18 @@ class TypeTestPage extends TestPage {
       // big float
       id = await insertValue(1 / 3);
       expect(await getValue(id), 1 / 3);
-      id = await insertValue(pow(2, 63) + .1);
-      expect(await getValue(id), pow(2, 63) + 0.1);
+      if (!kIsWeb) {
+        id = await insertValue(pow(2, 63) + .1);
+        expect(await getValue(id), pow(2, 63) + 0.1);
 
-      // integer?
-      id = await insertValue(pow(2, 62));
-      expect(await getValue(id), pow(2, 62));
+        // integer?
+        id = await insertValue(pow(2, 62));
+        expect(await getValue(id), pow(2, 62));
+      }
+      var bigValue = 1234567890123456789.0;
+      id = await insertValue(bigValue);
+      expect(await getValue(id), bigValue);
+
       await data.db.close();
     });
 
@@ -144,7 +161,10 @@ class TypeTestPage extends TestPage {
         //print(await getValue(id));
         //assert(eq.equals(await getValue(id), []));
 
-        final blob1234 = [1, 2, 3, 4];
+        var blob1234 = [1, 2, 3, 4];
+        if (!supportsCompatMode) {
+          blob1234 = Uint8List.fromList(blob1234);
+        }
         id = await insertValue(blob1234);
         dynamic value = (await getValue(id)) as List;
         print(value);
@@ -156,14 +176,10 @@ class TypeTestPage extends TestPage {
             .rawQuery('SELECT hex(value) FROM Test WHERE id = ?', [id]);
         expect(hexResult[0].values.first, '01020304');
 
-        // try blob lookup - does work on iOS only
+        // try blob lookup (works on Android since 2022-09-19)
         var rows = await data.db
             .rawQuery('SELECT * FROM Test WHERE value = ?', [blob1234]);
-        if (Platform.isIOS || Platform.isMacOS) {
-          expect(rows.length, 1);
-        } else {
-          expect(rows.length, 0);
-        }
+        expect(rows.length, 1);
 
         // try blob lookup using hex
         rows = await data.db.rawQuery(
@@ -219,6 +235,9 @@ class TypeTestPage extends TestPage {
           await insertValue(DateTime.fromMillisecondsSinceEpoch(1234567890));
         } on ArgumentError catch (_) {
           failed = true;
+        } on UnsupportedError catch (_) {
+          // this happens on the web
+          failed = true;
         }
         expect(failed, true);
       } finally {
@@ -239,9 +258,14 @@ class TypeTestPage extends TestPage {
           await insertValue(true);
         } on ArgumentError catch (_) {
           failed = true;
+        } on DatabaseException catch (_) {
+          // this happens on the web
+          failed = true;
         }
-        print('for now bool are accepted but inconsistent on iOS/Android');
-        expect(failed, isFalse);
+        if (supportsCompatMode) {
+          print('for now bool are accepted but inconsistent on iOS/Android');
+          expect(failed, isFalse);
+        }
       } finally {
         await data.db.close();
       }

@@ -2,15 +2,13 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:test/test.dart';
 
-import 'sqflite_test.dart';
-
 /// Run batch test.
 void run(SqfliteTestContext context) {
   final factory = context.databaseFactory;
   group('raw', () {
     test('BatchQuery', () async {
       // await Sqflite.devSetDebugModeOn();
-      var path = await context.initDeleteDb('batch.db');
+      var path = await context.initDeleteDb('batch_query.db');
       var db = await factory.openDatabase(path);
 
       // empty batch
@@ -51,11 +49,13 @@ void run(SqfliteTestContext context) {
       var batch = db.batch();
       var results = await batch.commit();
       expect(results.length, 0);
-      expect(results, []);
+      expect(results, isEmpty);
 
       // one create table
       batch = db.batch();
+      expect(batch.length, 0);
       batch.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
+      expect(batch.length, 1);
       results = await batch.commit();
       // devPrint('1 $results ${results?.first}');
       expect(results, [null]);
@@ -71,7 +71,9 @@ void run(SqfliteTestContext context) {
       batch = db.batch();
       batch.rawQuery('SELECT id, name FROM Test');
       batch.query('Test', columns: ['id', 'name']);
+
       results = await batch.commit();
+      expect(batch.length, results.length);
       // devPrint('select $results ${results?.first}');
       expect(results, [
         [
@@ -87,6 +89,7 @@ void run(SqfliteTestContext context) {
       batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item2']);
       batch.insert('Test', {'name': 'item3'});
       results = await batch.commit();
+      expect(batch.length, results.length);
       expect(results, [2, 3]);
 
       // update
@@ -113,7 +116,8 @@ void run(SqfliteTestContext context) {
           where: 'name = ?', whereArgs: <String>['item']);
       batch.delete('Test', where: 'name = ?', whereArgs: ['item']);
       results = await batch.commit(noResult: true);
-      expect(results, []);
+      expect(batch.length, 3);
+      expect(results, isEmpty);
 
       await db.close();
     });
@@ -140,8 +144,31 @@ void run(SqfliteTestContext context) {
       await db.close();
     });
 
+    test('batch in manual transaction', () async {
+      var path = await context.initDeleteDb('batch_custom_transaction.db');
+      var db = await factory.openDatabase(path);
+
+      await db.execute('BEGIN');
+
+      final batch = db.batch();
+      batch
+        ..execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)')
+        ..rawInsert('INSERT INTO Test (name) VALUES (?)', ['item1']);
+
+      await batch.apply(noResult: true);
+      await db.execute('COMMIT');
+
+      // Sanity check too see whether values have been written
+      final result = await db.rawQuery('SELECT * FROM Test');
+      expect(result, [
+        {'id': 1, 'name': 'item1'}
+      ]);
+
+      await db.close();
+    });
+
     test('Batch continue on error', () async {
-      // await Sqflite.devSetDebugModeOn();
+      //await Sqflite.devSetDebugModeOn();
       var path = await context.initDeleteDb('batch_continue_on_error.db');
       var db = await factory.openDatabase(path);
       try {
@@ -167,6 +194,35 @@ void run(SqfliteTestContext context) {
         expect(results[4], [
           {'id': 1, 'name': 'item1'}
         ]);
+      } finally {
+        await db.close();
+      }
+    });
+
+    test('Batch rolled back continue on error', () async {
+      // Here we expect the batch to be rolled back even if continueOnError is true
+      // since the transaction has been rolled back
+      // This used to fail (before 2024-01-01)
+      var path =
+          await context.initDeleteDb('batch_rolled_back_continue_on_error.db');
+      var db = await factory.openDatabase(path);
+      await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
+      try {
+        var batch = db.batch();
+        batch.insert('Test', {'id': 1},
+            conflictAlgorithm: ConflictAlgorithm.rollback);
+        batch.insert('Test', {'id': 1},
+            conflictAlgorithm: ConflictAlgorithm.rollback);
+        batch.insert('Test', {'id': 2},
+            conflictAlgorithm: ConflictAlgorithm.rollback);
+        try {
+          await batch.commit(continueOnError: true);
+          fail('should fail');
+        } on DatabaseException catch (e) {
+          expect(e.isUniqueConstraintError(), isTrue);
+        }
+
+        expect(await db.query('Test'), isEmpty);
       } finally {
         await db.close();
       }
