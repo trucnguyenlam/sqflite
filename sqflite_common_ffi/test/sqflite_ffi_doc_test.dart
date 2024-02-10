@@ -1,7 +1,6 @@
 @TestOn('vm')
 library sqflite_common_ffi.test.sqflite_ffi_doc_test;
 
-import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:test/test.dart';
 
@@ -44,7 +43,7 @@ void main() {
     await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
     await db.execute('ALTER TABLE Test ADD COLUMN name TEXT');
     // should succeed, but empty
-    expect(await db.query('Test'), []);
+    expect(await db.query('Test'), isEmpty);
 
     await db.close();
   });

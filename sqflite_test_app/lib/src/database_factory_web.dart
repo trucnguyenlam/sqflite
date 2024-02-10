@@ -11,10 +11,11 @@ DatabaseFactory? _databaseFactoryWebImpl;
 /// The Ffi database factory.
 DatabaseFactory get databaseFactoryWeb =>
     _databaseFactoryWebImpl ??= buildDatabaseFactory(
-        invokeMethod: (String method, [dynamic arguments]) {
-      final methodCall = SqfliteMethodCall(method, arguments);
-      return methodCall.handle();
-    });
+        tag: 'web',
+        invokeMethod: (String method, [Object? arguments]) {
+          final methodCall = SqfliteMethodCall(method, arguments);
+          return methodCall.handle();
+        });
 
 bool _debug = true;
 

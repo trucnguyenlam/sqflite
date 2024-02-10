@@ -28,9 +28,9 @@ class Item {
 }
 
 /// Menu item implementation.
-class MenuItem extends Item {
+class SqfMenuItem extends Item {
   /// Menu item implementation.
-  MenuItem(String name, this.body, {this.summary}) : super(name) {
+  SqfMenuItem(super.name, this.body, {this.summary}) {
     state = ItemState.none;
   }
 
@@ -40,7 +40,7 @@ class MenuItem extends Item {
   /// Run the item.
   Future run() {
     state = ItemState.running;
-    return Future.delayed(const Duration()).then((_) async {
+    return Future<void>.delayed(const Duration()).then((_) async {
       try {
         await body();
         state = ItemState.success;

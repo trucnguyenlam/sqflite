@@ -12,13 +12,12 @@ export 'package:matcher/matcher.dart';
 export 'package:sqflite_example/database/database.dart';
 
 export 'src/expect.dart' show expect, fail;
-
 // ignore_for_file: avoid_print
 
 /// Base test page.
 class TestPage extends StatefulWidget {
   /// Base test page.
-  TestPage(this.title, {Key? key}) : super(key: key);
+  TestPage(this.title, {super.key});
 
   /// The title.
   final String title;
@@ -51,6 +50,7 @@ class TestPage extends StatefulWidget {
   }
 
   @override
+  // ignore: library_private_types_in_public_api
   _TestPageState createState() => _TestPageState();
 }
 
@@ -70,7 +70,7 @@ bool? verify(bool? condition, [String? message]) {
 }
 
 /// Group.
-abstract class Group {
+abstract mixin class Group {
   /// List of tests.
   List<Test> get tests;
 

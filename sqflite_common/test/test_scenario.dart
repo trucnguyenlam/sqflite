@@ -2,6 +2,20 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/mixin/import_mixin.dart';
 import 'package:test/test.dart';
 
+/// Common open step
+var protocolOpenStep = [
+  'openDatabase',
+  {'path': ':memory:', 'singleInstance': false},
+  {'id': 1}
+];
+
+/// Common close step
+var protocolCloseStep = [
+  'closeDatabase',
+  {'id': 1},
+  null
+];
+
 class MockMethodCall {
   String? expectedMethod;
   dynamic expectedArguments;
@@ -37,22 +51,23 @@ class MockScenario {
 MockScenario startScenario(List<List> data) {
   late MockScenario scenario;
   final databaseFactoryMock = buildDatabaseFactory(
-      invokeMethod: (String method, [dynamic arguments]) async {
-    final index = scenario.index++;
-    // devPrint('$index ${scenario.methodsCalls[index]}');
-    final item = scenario.methodsCalls[index];
-    try {
-      expect(method, item.expectedMethod);
-      expect(arguments, item.expectedArguments);
-    } catch (e) {
-      // devPrint(e);
-      scenario.exception ??= '$e $index';
-    }
-    if (item.response is DatabaseException) {
-      throw item.response as DatabaseException;
-    }
-    return item.response;
-  });
+      tag: 'mock',
+      invokeMethod: (String method, [Object? arguments]) async {
+        final index = scenario.index++;
+        // devPrint('$index ${scenario.methodsCalls[index]}');
+        final item = scenario.methodsCalls[index];
+        try {
+          expect(method, item.expectedMethod);
+          expect(arguments, item.expectedArguments);
+        } catch (e) {
+          // devPrint(e);
+          scenario.exception ??= '$e $index';
+        }
+        if (item.response is DatabaseException) {
+          throw item.response as DatabaseException;
+        }
+        return item.response;
+      });
   scenario = MockScenario(databaseFactoryMock, data);
   return scenario;
 }

@@ -54,7 +54,8 @@ abstract class DatabaseException implements Exception {
   /// True if the exception is a database closed error
   bool isDatabaseClosedError() {
     if (_message != null) {
-      return _message!.contains('database_closed');
+      return _message!.contains('database_closed') ||
+          _message!.contains('This database has already been closed');
     }
     return false;
   }
@@ -96,14 +97,21 @@ abstract class DatabaseException implements Exception {
   /// This might involve parsing the sqlite native message to extract the code
   /// See https://www.sqlite.org/rescode.html for the list of result code
   int? getResultCode();
+
+  /// Platform specific error result.
+  ///
+  /// Its content is platform dependent and used internally and could change
+  /// in the future but could help in analyzing the error.
+  Object? get result;
 }
 
 /// Exception implementation
 class SqfliteDatabaseException extends DatabaseException {
   /// ctor with a message and some data
-  SqfliteDatabaseException(String? message, this.result, {int? resultCode})
-      : super(message) {
+  SqfliteDatabaseException(super.message, this.result,
+      {int? resultCode, bool? transactionClosed}) {
     _resultCode = resultCode;
+    _transactionClosed = transactionClosed;
   }
 
   /// Our exception message
@@ -113,10 +121,14 @@ class SqfliteDatabaseException extends DatabaseException {
   int? _resultCode;
 
   /// Typically the result of a native call
-  dynamic result;
+  @override
+  Object? result;
 
   /// The result as a map
   Map get resultMap => result as Map;
+
+  /// True if the current transaction has been rolled back
+  bool? _transactionClosed;
 
   @override
   String toString() {
@@ -182,4 +194,21 @@ class SqfliteDatabaseException extends DatabaseException {
         }
         return null;
       }();
+
+  /// True if the current transaction has been rolled back in the execution
+  bool get transactionClosed => _transactionClosed ?? false;
+
+  /// True if the current transaction has been rolled back in the execution
+  set transactionClosed(bool transactionClosed) =>
+      _transactionClosed = transactionClosed;
+}
+
+/// Special exception to throw during a transaction to force a rollback.
+/// However the transaction is still considered successful.
+class SqfliteTransactionRollbackSuccess<T> {
+  /// Result of the transaction.
+  final T result;
+
+  /// Special exception to throw during a transaction to force a rollback.
+  SqfliteTransactionRollbackSuccess(this.result);
 }

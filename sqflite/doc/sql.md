@@ -42,6 +42,53 @@ See [Conflict algorithm](conflict_algorithm.md) for conflict handling.
 var list = await db.query('my_table', columns: ['name', 'type']);
 ```
 
+The list is read-only. If you want to modify the results by adding/deleting items in memory,
+you need to clone the list:
+
+```dart
+// This throws an error
+list.add(<String, Object?>{'name': 'some data'});
+```
+```dart
+// This works
+list = List.from(list)
+list.add(<String, Object?>{'name': 'some data'});
+```
+
+Each item (map) of the list is read-only too so you need to clone it if you want to modify the result.
+```dart
+map = list.first;
+// This crashes
+map['name'] = 'other';
+```
+```dart
+// This works
+map = Map.from(map);
+map['name'] = 'other';
+```
+
+#### Query by page
+
+If you perform a query on a huge table, you might want to avoid allocating all the rows at once.
+There is a basic cursor support where you can specify the buffer size (number of rows cached using a look-ahead buffer)
+
+```dart
+// Query cursor
+var cursor = await db.queryCursor(
+  'Product',
+  bufferSize: 10,
+);
+try {
+  while (await cursor.moveNext()) {
+    var row = cursor.current;
+    // ...
+  }
+} finally {
+  // Important don't forget to close the cursor in case any exception is thrown before
+  await cursor.close();
+}
+```
+
 ### delete
 
 `delete` is for deleting content in a table. It returns the number of rows deleted.
@@ -71,7 +118,7 @@ await db.transaction((txn) async {
 });
 ```
 
-* Make sure to sure the inner transaction object - `txn` in the code above - is used in a transaction (using the `db` object itself will cause a deadlock),
+* Make sure to use the inner transaction object - `txn` in the code above - is used in a transaction (using the `db` object itself will cause a deadlock),
 * You can throw an error during a transaction to cancel a transaction,
 * When an error is thrown during a transaction, the action is cancelled right away and previous commands in the transaction are reverted,
 * No other concurrent modification on the database (even from an outside process) can happen during a transaction,
