@@ -25,7 +25,7 @@ class SqfliteDatabaseOpenHelper {
   /// Open options
   final OpenDatabaseOptions? options;
 
-  /// Our database pathy
+  /// Our database path
   final String path;
 
   /// The database once opened.

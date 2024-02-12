@@ -49,12 +49,15 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.requery.android.database.DatabaseErrorHandler;
 import io.requery.android.database.sqlite.SQLiteCursor;
+import io.requery.android.database.sqlite.SQLiteCustomExtension;
 import io.requery.android.database.sqlite.SQLiteDatabase;
+import io.requery.android.database.sqlite.SQLiteDatabaseConfiguration;
 
 class Database {
     // To turn on when supported fully
     // 2022-09-14 experiments show several corruption issue.
     final static boolean WAL_ENABLED_BY_DEFAULT = false;
+    static final String SIGNAL_SQLITE_EXTENSION = "libsignal_tokenizer";
     private static final String WAL_ENABLED_META_NAME = "com.tekartik.sqflite.wal_enabled";
     static private Boolean walGloballyEnabled;
     final boolean singleInstance;
@@ -62,6 +65,7 @@ class Database {
     final String path;
     final int id;
     final int logLevel;
+    final boolean loadExtensions;
     @NonNull
     final Context context;
     /// Delayed operations not in the current transaction.
@@ -79,12 +83,13 @@ class Database {
     // Cursors
     private int lastCursorId = 0; // incremental cursor id
 
-    Database(Context context, String path, int id, boolean singleInstance, int logLevel) {
+    Database(Context context, String path, int id, boolean singleInstance, int logLevel, boolean loadExtensions) {
         this.context = context;
         this.path = path;
         this.singleInstance = singleInstance;
         this.id = id;
         this.logLevel = logLevel;
+        this.loadExtensions = loadExtensions;
     }
 
     @VisibleForTesting
@@ -140,7 +145,7 @@ class Database {
     public void open() {
         int flags = SQLiteDatabase.CREATE_IF_NECESSARY;
 
-        // Check meta data only once
+        // Check metadata only once
         if (walGloballyEnabled == null) {
             walGloballyEnabled = checkWalEnabled(context);
             if (walGloballyEnabled) {
@@ -154,13 +159,23 @@ class Database {
             flags |= SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING;
         }
 
-        sqliteDatabase = SQLiteDatabase.openDatabase(path, null, flags);
+        SQLiteDatabaseConfiguration configuration = new SQLiteDatabaseConfiguration(path, flags);
+        if (loadExtensions) {
+            addCustomExtensions(configuration);
+        }
+        sqliteDatabase = SQLiteDatabase.openDatabase(configuration, null, null);
     }
 
     // Change default error handler to avoid erasing the existing file.
     public void openReadOnly() {
-        sqliteDatabase = SQLiteDatabase.openDatabase(path, null,
-                SQLiteDatabase.OPEN_READONLY, new DatabaseErrorHandler() {
+        SQLiteDatabaseConfiguration configuration = new SQLiteDatabaseConfiguration(path, SQLiteDatabase.OPEN_READONLY);
+        if (loadExtensions) {
+            addCustomExtensions(configuration);
+        }
+        sqliteDatabase = SQLiteDatabase.openDatabase(
+                configuration,
+                null,
+                new DatabaseErrorHandler() {
                     @Override
                     public void onCorruption(SQLiteDatabase dbObj) {
                         // ignored
@@ -170,6 +185,10 @@ class Database {
                         // access should fail
                     }
                 });
+    }
+
+    private static void addCustomExtensions(SQLiteDatabaseConfiguration configuration) {
+        configuration.customExtensions.add(new SQLiteCustomExtension(SIGNAL_SQLITE_EXTENSION, null));
     }
 
     public void close() {

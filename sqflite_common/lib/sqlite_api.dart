@@ -444,7 +444,8 @@ abstract class OpenDatabaseOptions {
       OnDatabaseVersionChangeFn? onDowngrade,
       OnDatabaseOpenFn? onOpen,
       bool? readOnly = false,
-      bool? singleInstance = true}) {
+      bool? singleInstance = true,
+      bool? loadExtensions = false,}) {
     return impl.SqfliteOpenDatabaseOptions(
         version: version,
         onConfigure: onConfigure,
@@ -453,7 +454,9 @@ abstract class OpenDatabaseOptions {
         onDowngrade: onDowngrade,
         onOpen: onOpen,
         readOnly: readOnly,
-        singleInstance: singleInstance);
+        singleInstance: singleInstance,
+        loadExtensions: loadExtensions,
+    );
   }
 
   /// Specify the expected version.
@@ -481,6 +484,9 @@ abstract class OpenDatabaseOptions {
 
   /// The existing single-instance (hot-restart)
   late bool singleInstance;
+
+  /// Whether to load extensions
+  late bool loadExtensions;
 }
 
 ///

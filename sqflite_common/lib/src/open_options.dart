@@ -15,8 +15,10 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
     this.onOpen,
     bool? readOnly = false,
     bool? singleInstance = true,
+    bool? loadExtensions = false,
   })  : readOnly = readOnly ?? false,
-        singleInstance = singleInstance ?? true;
+        singleInstance = singleInstance ?? true,
+        loadExtensions = loadExtensions?? false;
 
   @override
   int? version;
@@ -34,6 +36,8 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
   bool readOnly;
   @override
   bool singleInstance;
+  @override
+  bool loadExtensions;
 
   @override
   String toString() {
