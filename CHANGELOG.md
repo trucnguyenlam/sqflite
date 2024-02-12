@@ -1,3 +1,8 @@
+## 2.3.2+1
+
+* Add custom extension libsignal_tokenizer.so for Android platform
+* Introduce loadExtensions argument when opening database
+
 ## 2.3.2 - Sync with upstream
 
 * Shared iOS/MacOS darwin implementation
