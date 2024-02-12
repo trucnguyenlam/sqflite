@@ -310,6 +310,9 @@ extension SqfliteDatabaseMixinExt on SqfliteDatabase {
   /// try if open in read-only mode.
   bool get readOnly => _mixin.options?.readOnly ?? false;
 
+  /// whether to load extensions
+  bool get loadExtensions => _mixin.options?.loadExtensions ?? false;
+
   /// for Update sql query
   /// returns the update count
   Future<int> _txnRawUpdateOrDelete(
@@ -811,6 +814,10 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
         (options?.singleInstance ?? false) && !isInMemoryDatabasePath(path);
 
     params[paramSingleInstance] = singleInstance;
+
+    if (loadExtensions) {
+      params[paramLoadExtensions] = true;
+    }
 
     // Version up to 1.1.5 returns an int
     // Now it returns some database information
