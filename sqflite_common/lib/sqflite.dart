@@ -70,7 +70,8 @@ Future<Database> openDatabase(String path,
     OnDatabaseVersionChangeFn? onDowngrade,
     OnDatabaseOpenFn? onOpen,
     bool? readOnly = false,
-    bool? singleInstance = true}) {
+    bool? singleInstance = true,
+    bool? loadExtensions = false,}) {
   final options = OpenDatabaseOptions(
       version: version,
       onConfigure: onConfigure,
@@ -79,16 +80,20 @@ Future<Database> openDatabase(String path,
       onDowngrade: onDowngrade,
       onOpen: onOpen,
       readOnly: readOnly,
-      singleInstance: singleInstance);
+      singleInstance: singleInstance,
+      loadExtensions: loadExtensions,);
   return databaseFactory.openDatabase(path, options: options);
 }
 
 ///
 /// Open the database at a given path in read only mode
 ///
-Future<Database> openReadOnlyDatabase(String path,
-        {bool? singleInstance = true}) =>
-    openDatabase(path, readOnly: true, singleInstance: singleInstance);
+Future<Database> openReadOnlyDatabase(
+  String path, {
+  bool? singleInstance = true,
+  bool? loadExtensions = false,
+}) =>
+    openDatabase(path, readOnly: true, singleInstance: singleInstance, loadExtensions: loadExtensions);
 
 ///
 /// Get the default databases location.

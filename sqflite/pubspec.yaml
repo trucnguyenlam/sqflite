@@ -43,7 +43,8 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  sqflite_common: '>=2.5.0-1 <4.0.0'
+  sqflite_common:
+    path: ../sqflite_common
   path: '>=1.8.0 <3.0.0'
 
 dev_dependencies:

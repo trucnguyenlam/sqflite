@@ -20,6 +20,7 @@ import static com.tekartik.sqflite.Constant.METHOD_QUERY_CURSOR_NEXT;
 import static com.tekartik.sqflite.Constant.METHOD_UPDATE;
 import static com.tekartik.sqflite.Constant.PARAM_CMD;
 import static com.tekartik.sqflite.Constant.PARAM_ID;
+import static com.tekartik.sqflite.Constant.PARAM_LOAD_EXTENSIONS;
 import static com.tekartik.sqflite.Constant.PARAM_LOCALE;
 import static com.tekartik.sqflite.Constant.PARAM_LOG_LEVEL;
 import static com.tekartik.sqflite.Constant.PARAM_PATH;
@@ -347,14 +348,13 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     private void onOpenDatabaseCall(final MethodCall call, final Result result) {
         final String path = call.argument(PARAM_PATH);
         final Boolean readOnly = call.argument(PARAM_READ_ONLY);
+        final Boolean loadExtensions = call.argument(PARAM_LOAD_EXTENSIONS);
         final boolean inMemory = isInMemoryPath(path);
 
         final boolean singleInstance = !Boolean.FALSE.equals(call.argument(PARAM_SINGLE_INSTANCE)) && !inMemory;
 
         // For single instance we create or reuse a thread right away
         // DO NOT TRY TO LOAD existing instance, the database has been closed
-
-
         if (singleInstance) {
             // Look for in memory instance
             synchronized (databaseMapLocker) {
@@ -388,7 +388,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         }
         final int databaseId = newDatabaseId;
 
-        final Database database = new Database(context, path, databaseId, singleInstance, logLevel);
+        final Database database = new Database(context, path, databaseId, singleInstance, logLevel, Boolean.TRUE.equals(loadExtensions));
 
         synchronized (databaseMapLocker) {
             // Create worker pool if necessary

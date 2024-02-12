@@ -42,6 +42,14 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    sourceSets {
+        main {
+            jniLibs.srcDirs += 'src/main/jniLibs'
+            java.srcDirs += 'src/main/java'
+            jni.srcDirs = []
+        }
+    }
+
     defaultConfig {
         minSdkVersion 16
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

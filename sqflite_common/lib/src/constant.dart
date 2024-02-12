@@ -128,6 +128,9 @@ const String paramReadOnly = 'readOnly';
 /// True if opened as a single instance (bool)
 const String paramSingleInstance = 'singleInstance';
 
+/// Whether to load extensions
+const String paramLoadExtensions = 'loadExtensions';
+
 /// SQL query (insert/execute/update/select).
 ///
 /// String.
