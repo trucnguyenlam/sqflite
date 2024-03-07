@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'sqflite'
-  s.version          = '0.0.4'
+  s.version          = '0.0.6'
   s.summary          = 'SQLite plugin.'
   s.description      = <<-DESC
 Access SQLite database.
@@ -20,6 +20,12 @@ Access SQLite database.
   s.osx.deployment_target = '10.14'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
   s.resource_bundles = {'sqflite_darwin_privacy' => ['Resources/PrivacyInfo.xcprivacy']}
+  # c++ support
+  s.libraries = "c++"
+  s.xcconfig  = {
+    'CLANG_CXX_LANGUAGE_STANDARD' => 'c++11',
+    'CLANG_CXX_LIBRARY' => 'libc++'
+  }
   # s.xcconfig = { 'OTHER_CFLAGS' => '$(inherited) -DSqfliteDarwinDB_SQLITE_STANDALONE' }
 
   # iOS packed version https://github.com/yapstudios/YapDatabase/wiki/SQLite-version-(bundled-with-OS)
@@ -41,7 +47,7 @@ Access SQLite database.
     sss.tvos.pod_target_xcconfig = sqlite_xcconfig_ios
     sss.watchos.pod_target_xcconfig = sqlite_xcconfig_ios
     # compiled with extensions
-    sss.vendored_frameworks = 'Frameworks/SignalTokenizer.xcframework'
+    sss.vendored_frameworks = 'Frameworks/SignalTokenizer.xcframework', 'Frameworks/CalibreTokenizer.xcframework', 'Frameworks/icudata.xcframework', 'Frameworks/icui18n.xcframework', 'Frameworks/icuio.xcframework', 'Frameworks/icuuc.xcframework', 'Frameworks/stemmer.xcframework'
   end
 
 end
