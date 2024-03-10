@@ -35,6 +35,7 @@ import android.content.Context;
 import android.os.Process;
 import android.util.Log;
 
+import com.getkeepsafe.relinker.ReLinker;
 import com.tekartik.sqflite.dev.Debug;
 import com.tekartik.sqflite.operation.MethodCallOperation;
 
@@ -72,6 +73,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     static private DatabaseWorkerPool databaseWorkerPool;
     private Context context;
     private MethodChannel methodChannel;
+    private volatile boolean loadedIcu = false;
 
     // Needed public constructor
     public SqflitePlugin() {
@@ -154,11 +156,23 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger) {
+        loadIcuLibraries(applicationContext);
         this.context = applicationContext;
         methodChannel = new MethodChannel(messenger, Constant.PLUGIN_KEY,
                 StandardMethodCodec.INSTANCE,
                 messenger.makeBackgroundTaskQueue());
         methodChannel.setMethodCallHandler(this);
+    }
+
+    private void loadIcuLibraries(Context context) {
+        if (!loadedIcu) {
+            // the order of icu libraries much be in this way
+            ReLinker.loadLibrary(context, "icudata");
+            ReLinker.loadLibrary(context, "icuuc");
+            ReLinker.loadLibrary(context, "icui18n");
+            ReLinker.loadLibrary(context, "icuio");
+            loadedIcu = true;
+        }
     }
 
     @Override
