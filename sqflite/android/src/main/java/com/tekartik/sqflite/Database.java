@@ -58,6 +58,7 @@ class Database {
     // 2022-09-14 experiments show several corruption issue.
     final static boolean WAL_ENABLED_BY_DEFAULT = false;
     static final String SIGNAL_SQLITE_EXTENSION = "libsignal_tokenizer";
+    static final String CALIBRE_SQLITE_EXTENSION = "libsqlite_extension";
     private static final String WAL_ENABLED_META_NAME = "com.tekartik.sqflite.wal_enabled";
     static private Boolean walGloballyEnabled;
     final boolean singleInstance;
@@ -189,6 +190,7 @@ class Database {
 
     private static void addCustomExtensions(SQLiteDatabaseConfiguration configuration) {
         configuration.customExtensions.add(new SQLiteCustomExtension(SIGNAL_SQLITE_EXTENSION, null));
+        configuration.customExtensions.add(new SQLiteCustomExtension(CALIBRE_SQLITE_EXTENSION, null));
     }
 
     public void close() {
