@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'sqflite'
-  s.version          = '0.0.7'
+  s.version          = '1.0.0'
   s.summary          = 'SQLite plugin.'
   s.description      = <<-DESC
 Access SQLite database.
@@ -33,8 +33,29 @@ Access SQLite database.
   # then build the source with ./configure && make sqlite3.c sqlite3.h sqlite3ext.h,
   # after that adding sqlite3_auto_extension(sqlite3_signaltokenizer_init) to sqlite3.c source
   sqlite_version = "3.45.1"
-  # for flag, https://github.com/requery/sqlite-android/blob/master/sqlite-android/src/main/jni/sqlite/Android.mk
-  sqlite_compiled_options = "-DNDEBUG=1 -DSQLITE_HAVE_ISNAN -DSQLITE_DEFAULT_JOURNAL_SIZE_LIMIT=1048576 -DSQLITE_THREADSAFE=2 -DSQLITE_TEMP_STORE=3 -DSQLITE_POWERSAFE_OVERWRITE=1 -DSQLITE_DEFAULT_FILE_FORMAT=4 -DSQLITE_DEFAULT_AUTOVACUUM=1 -DSQLITE_ENABLE_MEMORY_MANAGEMENT=1 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS -DSQLITE_ENABLE_FTS4 -DSQLITE_ENABLE_FTS4_PARENTHESIS -DSQLITE_ENABLE_FTS5 -DSQLITE_ENABLE_FTS5_PARENTHESIS -DSQLITE_ENABLE_JSON1 -DSQLITE_ENABLE_RTREE=1 -DSQLITE_UNTESTABLE -DSQLITE_OMIT_COMPILEOPTION_DIAGS -DSQLITE_DEFAULT_FILE_PERMISSIONS=0600 -DSQLITE_DEFAULT_MEMSTATUS=0 -DSQLITE_MAX_EXPR_DEPTH=0 -DSQLITE_USE_ALLOCA -DSQLITE_ENABLE_BATCH_ATOMIC_WRITE -O3"
+  # for Android, https://github.com/requery/sqlite-android/blob/master/sqlite-android/src/main/jni/sqlite/Android.mk
+  # see https://github.com/CocoaPods/Specs/blob/master/Specs/d/c/2/sqlite3/3.45.1/sqlite3.podspec.json for iOS perf-threadsafe
+  # also https://github.com/signalapp/better-sqlite3/blob/v8.7.1/docs/compilation.md for some other optimisation
+  sqlite_compiled_options = "-DNDEBUG=1 \
+    -DSQLITE_THREADSAFE=2 \
+    -DSQLITE_ENABLE_FTS3_PARENTHESIS \
+    -DSQLITE_ENABLE_FTS4 \
+    -DSQLITE_ENABLE_FTS5 \
+    -DSQLITE_ENABLE_JSON1 \
+    -DSQLITE_ENABLE_RTREE=1 \
+    -DSQLITE_USE_ALLOCA=1 \
+    -DSQLITE_DQS=0 \
+    -DSQLITE_DEFAULT_CACHE_SIZE=-16000 \
+    -DSQLITE_DEFAULT_MEMSTATUS=0 \
+    -DSQLITE_DEFAULT_WAL_SYNCHRONOUS=1 \
+    -DSQLITE_LIKE_DOESNT_MATCH_BLOBS=1 \
+    -DSQLITE_MAX_EXPR_DEPTH=0 \
+    -DSQLITE_OMIT_DECLTYPE=1 \
+    -DSQLITE_OMIT_DEPRECATED=1 \
+    -DSQLITE_OMIT_PROGRESS_CALLBACK=1 \
+    -DSQLITE_OMIT_SHARED_CACHE \
+    -DSQLITE_TRACE_SIZE_LIMIT=32 \
+    -O3"
 
   # instruction borrowed from https://github.com/ccgus/fmdb/blob/master/FMDB.podspec
   s.subspec 'sqlite3' do |sss|
