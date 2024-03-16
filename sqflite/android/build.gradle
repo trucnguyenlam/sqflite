@@ -61,7 +61,7 @@ android {
 
 dependencies {
     // https://jitpack.io/#trucnguyenlam/sqlite-android, tag is maintained in develop branch
-     implementation 'com.github.trucnguyenlam:sqlite-android:3.45.1'
+     implementation 'com.github.trucnguyenlam:sqlite-android:3.45.2'
     
     // for mavenLocal()
     // implementation 'io.requery:sqlite-android:3.45.0-SNAPSHOT'

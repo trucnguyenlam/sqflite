@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'sqflite'
-  s.version          = '1.0.0'
+  s.version          = '3.45.2'
   s.summary          = 'SQLite plugin.'
   s.description      = <<-DESC
 Access SQLite database.
@@ -29,10 +29,9 @@ Access SQLite database.
   # s.xcconfig = { 'OTHER_CFLAGS' => '$(inherited) -DSqfliteDarwinDB_SQLITE_STANDALONE' }
 
   # iOS packed version https://github.com/yapstudios/YapDatabase/wiki/SQLite-version-(bundled-with-OS)
-  # download sqlite version from https://www.sqlite.org/chronology.html,
-  # then build the source with ./configure && make sqlite3.c sqlite3.h sqlite3ext.h,
-  # after that adding sqlite3_auto_extension(sqlite3_signaltokenizer_init) to sqlite3.c source
-  sqlite_version = "3.45.1"
+  # download sqlite amalgamation version from https://www.sqlite.org/download.html,
+  # after that adding sqlite3_auto_extension(sqlite3_signaltokenizer_init) to sqlite3.c source near openDatabase function
+  sqlite_version = "3.45.2"
   # for Android, https://github.com/requery/sqlite-android/blob/master/sqlite-android/src/main/jni/sqlite/Android.mk
   # see https://github.com/CocoaPods/Specs/blob/master/Specs/d/c/2/sqlite3/3.45.1/sqlite3.podspec.json for iOS perf-threadsafe
   # also https://github.com/signalapp/better-sqlite3/blob/v8.7.1/docs/compilation.md for some other optimisation
