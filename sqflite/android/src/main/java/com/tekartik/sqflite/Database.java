@@ -426,7 +426,7 @@ class Database {
 
     void handleException(Exception exception, Operation operation) {
         if (exception instanceof SQLiteCantOpenDatabaseException) {
-            operation.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path, null);
+            operation.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path + " error: " + exception.getMessage(), null);
             return;
         } else if (exception instanceof SQLException) {
             operation.error(Constant.SQLITE_ERROR, exception.getMessage(), SqlErrorInfo.getMap(operation));

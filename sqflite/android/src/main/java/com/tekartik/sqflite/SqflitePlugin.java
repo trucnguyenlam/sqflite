@@ -433,7 +433,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
                                 if (!directory.exists()) {
                                     if (!directory.mkdirs()) {
                                         if (!directory.exists()) {
-                                            result.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path, null);
+                                            result.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path + " not exists", null);
                                             return;
                                         }
                                     }
